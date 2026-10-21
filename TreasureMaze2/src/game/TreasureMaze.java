@@ -331,11 +331,13 @@ public final class TreasureMaze extends JPanel { // the game screen: input, rule
         int tx = player.getX() + dx; // target column
         int ty = player.getY() + dy; // target row
         if (!Pathfinder.walkable(currentMap, tx, ty, false)) return; // wall or outside: no move
-        if (mimicSystem.isDisguisedAt(tx, ty)) { // a fake chest blocks the way
-            statusMessage = "A chest is in the way. Stand next to it and press E to open it."; // chests open ONLY with T, never by walking
-            repaint(); // redraw
-            return; // no move is spent
-        } // end of fake chest
+
+        // Both the real chest and disguised mimic chests block movement silently.
+        Point realChest = treasureSystem.getPosition();
+        if ((realChest != null && realChest.x == tx && realChest.y == ty)
+                || mimicSystem.isDisguisedAt(tx, ty)) {
+            return; // blocked silently; no move is spent
+        }
         if (vanishSystem.isVanished(tx, ty)) { // the floor there has crumbled away
             statusMessage = "That tile crumbled away - wait for it to grow back!"; // explain
             repaint(); // redraw
