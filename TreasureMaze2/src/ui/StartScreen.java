@@ -47,9 +47,10 @@ public final class StartScreen extends JPanel { // rules screen
             6. MIMICS (hearts lost per catch):
                L1: 1 Mimic + 1 fake chest (1)   L2: 1 + 1 fake (2)
                L3: 2 Mimics + 1 fake chest (1)  Fake ones move 3x slower.
-            7. BOMBS: 20 black (cost a heart, level 1: eliminate you)
-               and 5 blue per level.  Walk over a blue bomb to pick it up,
-               SPACE places it: it stuns Mimics within 4 cells for 3.5 s.
+            7. BOMBS: Level 1: 10 black + 5 blue (15 total).  Levels 2-3:
+               20 black + 5 blue (25 total).  Walk over a blue bomb to
+               pick it up, SPACE places it: stuns Mimics within 4 cells
+               for 3.5 s.
             8. MOVES: level 1 by route length, level 2 = 725, level 3 = 888.
                Out of moves: -1 heart.  Level 1 floor tiles crumble.
             """); // end of the rules text block

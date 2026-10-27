@@ -30,7 +30,7 @@ public final class GameMap { // static level factory
 
     // width, height, shortcut openings (more = easier), bombs, mimics, coins
     private static final int[][] SPEC = { // one row of settings per level
-        {15, 15, 12, 25, 1, 3}, // level 1: small: 25 bomb pickups (20 black + 5 blue), 1 regular mimic, 3 coins
+        {15, 15, 12, 15, 1, 3}, // level 1: 15 bomb pickups (10 black + 5 blue), 1 regular mimic, 3 coins
         {31, 25, 14, 25, 1, 4}, // level 2: 25 bomb pickups, 1 regular mimic, 4 coins
         {35, 31, 18, 25, 2, 5} // level 3: 25 bomb pickups, 2 regular mimics, 5 coins
     }; // end of SPEC (every level also gets 1 disguised mimic chest, added by MimicLogic when the level loads)
@@ -166,23 +166,39 @@ public final class GameMap { // static level factory
         for (int y = 1; y < h - 1; y++) { // inner rows
             for (int x = 1; x < w - 1; x++) { // inner columns
                 if (g[y][x] == '.' && fromStart[y][x] >= minBombDist // empty floor, not next to the start
-                    && Math.abs(x - treasure.x) + Math.abs(y - treasure.y) > 1 // never touching the real chest
+                    && Math.max(Math.abs(x - treasure.x), Math.abs(y - treasure.y)) > 1 // keep all eight neighboring cells clear around the real chest
                     && Math.abs(x - exit.x) + Math.abs(y - exit.y) > 1) { // never touching the exit
                     bombCandidates.add(new Point(x, y)); // keep it
                 } // end of filter
             } // end of column loop
         } // end of row loop
-        Collections.shuffle(bombCandidates, RND); // random order
         int placed = 0; // bombs placed so far
-        for (Point p : bombCandidates) { // try each candidate
-            if (placed >= spec[3]) break; // enough bombs
-            g[p.y][p.x] = 'B'; // tentatively place a bomb
-            if (safeRoutesExist(g, start, treasure, exit, coins)) { // everything still reachable without bombs
+        List<Point> placedBombs = new ArrayList<>(); // track bomb positions for spacing
+        while (placed < spec[3] && !bombCandidates.isEmpty()) { // place all required pickups
+            Collections.shuffle(bombCandidates, RND); // randomize candidates with equal spacing
+            int bestIndex = 0; // index of the best candidate
+            int bestDistance = -1; // greatest distance from the nearest placed bomb
+            for (int i = 0; i < bombCandidates.size(); i++) { // search for an isolated candidate
+                Point candidate = bombCandidates.get(i); // candidate being checked
+                int nearestDistance = Integer.MAX_VALUE; // closest existing bomb
+                for (Point existing : placedBombs) { // compare with previously placed bombs
+                    int distance = Math.abs(candidate.x - existing.x) + Math.abs(candidate.y - existing.y); // Manhattan distance
+                    nearestDistance = Math.min(nearestDistance, distance); // track the nearest bomb
+                } // end of existing-bomb comparison
+                if (nearestDistance > bestDistance) { // prefer the most isolated candidate
+                    bestDistance = nearestDistance; // save its spacing score
+                    bestIndex = i; // save its candidate index
+                } // end of best-candidate check
+            } // end of candidate search
+            Point p = bombCandidates.remove(bestIndex); // avoid checking this candidate again
+            g[p.y][p.x] = 'B'; // tentatively place a black bomb pickup
+            if (safeRoutesExist(g, start, treasure, exit, coins)) { // ensure objectives and coins remain reachable
                 placed++; // keep the bomb
+                placedBombs.add(p); // use this position to space later bombs
             } else { // a route would be blocked
-                g[p.y][p.x] = '.'; // undo it
-            } // end of check
-        } // end of candidate loop
+                g[p.y][p.x] = '.'; // undo the placement
+            } // end of route check
+        } // end of spread-out placement loop
         if (placed < spec[3]) return null; // could not place all bombs
         if (!makeBlueBombs(g, start)) return null; // turn 5 of the pickups into blue ones
 

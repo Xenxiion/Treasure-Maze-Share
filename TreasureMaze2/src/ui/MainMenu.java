@@ -24,7 +24,7 @@ public final class MainMenu extends JPanel { // title screen
         gbc.insets = new Insets(15, 15, 15, 15); // spacing around components
         gbc.gridx = 0; // single column
 
-        JLabel titleLabel = new JLabel("THE LAST SYMBOL"); // game title
+        JLabel titleLabel = new JLabel("TREASURE MAZE"); // game title
         titleLabel.setFont(new Font(Font.MONOSPACED, Font.BOLD, 48)); // big monospaced font
         titleLabel.setForeground(Color.CYAN); // cyan text
 

@@ -32,7 +32,8 @@ public final class GamePreview extends JPanel { // level overview screen
             LEVEL 1 (EASY): 15x15 | 3 coins | 1 Mimic + 1 fake chest | 1 heart
             LEVEL 2 (MID):  31x25 | 4 coins | 1 Mimic + 1 fake chest | 2 hearts
             LEVEL 3 (HARD): 35x31 | 5 coins | 2 Mimics + 1 fake chest | 1 heart
-            Each level: 20 black bombs + 5 blue bombs (25 pickups).
+            Level 1: 10 black + 5 blue (15 pickups).  Levels 2-3: 20 black
+            + 5 blue (25 pickups).
             Moves: L1 by route length, L2 725, L3 888.  Coin = +67 moves.
 
             Goal: open the real chest (press E next to it) -> Exit unlocks

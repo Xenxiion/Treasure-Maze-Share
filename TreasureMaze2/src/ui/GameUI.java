@@ -23,7 +23,7 @@ public class GameUI { // owns the window and switches screens
     private SoundManager soundManager; // sound effects and background music
 
     public void showWindow() { // build and show the window
-        window = new JFrame("The Last Symbol"); // window with a title
+        window = new JFrame("TREASURE MAZE"); // window with a title
         cardLayout = new CardLayout(); // screen switcher
         mainPanel = new JPanel(cardLayout); // container using the switcher
 
