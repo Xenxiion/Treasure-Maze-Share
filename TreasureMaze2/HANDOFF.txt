@@ -1,0 +1,59 @@
+TREASUREMAZE HANDOFF (Java 21 Swing, ASCII-only source, comment on each line)
+
+LAYOUT: src/ (Main, audio, data, game, logic, ui), assets/ (kenney-tiny-dungeon, kenney-explosion, custom, sfx, music), tools/ (make_custom_sprites.py, make_sfx.py), .vscode/settings.json
+BUILD: mkdir out && javac -Xlint:all -d out $(find src -name '*.java'); run: java -cp out Main (from project root, so assets/ is found)
+
+COMPLETED (compiled clean with -Xlint:all, zero warnings)
+- Move limits: original formula x1/x2/x3 for L1/L2/L3 (tested: 103, 760, 765 on sample maps)
+- 4 hearts; at 0 hearts a 5 s escape countdown starts once; expiry ends game; reaching open exit restores 1 heart; damage ignored during countdown (tested)
+- Random validated map generator (GameMap), new maps each reset (tested 60x3 valid, safe route exists, all distinct on L1; max gen 14 ms)
+- Mimics: patrol routes, walkable, >=6 cells from chest, no mimics on L1 (tested)
+- Coins (CoinLogic): collect all coins = alternative exit unlock (tested at logic level)
+- Level 1 only: vanishing tiles (VanishLogic) and lethal bombs -> countdown (tested)
+- SFX play-count logic (step, bomb, mimic_catch, chest, tick; repaint plays nothing) tested via counters
+- Kenney Tiny Dungeon + Pixel Explosion (CC0) integrated; bomb/coin/heart sprites self-made
+- Screenshots of L1/L2 rendered headless and checked visually
+
+REMAINING
+- (done after first handoff: StartScreen/GamePreview text, README.md, assets/CREDITS.md, comment check)
+- Untested: real audio playback (sandbox has no audio device; WAV parses as PCM 16-bit stereo 48 kHz, 146.9 s), mimic_step/coin sound counts in game flow (mimic_step was 0 in test), real window/keyboard run, vanish regrow in-game
+- Assumption to disclose: escaping restores 1 heart; walking animation is only a hop and flip; SFX are self-synthesized; music file ~28 MB
+
+TEST TIMEOUT NOTE
+- The full-game headless test (reflection harness G.java in the session scratchpad) hit the 120 s tool limit (exit code 143). Cause: the test created a JFrame under java.awt.headless=true (HeadlessException) and the non-daemon javax.swing.Timer in TreasureMaze kept the JVM alive, so System.exit was never reached. After removing the JFrame the test finished with fails=0. Always run with timeout and System.exit.
+
+UPDATE (mimic AI v2 + level 3 zoom)
+- MimicLogic.update(px,py,map,now) is called from TreasureMaze.onTick (timer), so mimics move with no player input; first step is delayed (head start).
+- States: PATROL (random waypoints over the whole map) -> CHASE (line of sight, range 7/8) -> INVESTIGATE (last known position or noise) -> SEARCH (3 spots within 4 steps) -> PATROL.
+- Noise: walking within 4 cells of the closed chest (heard within 12 path steps), opening the chest (20 path steps).
+- Pace: L2 patrol 650 ms/step, alert 420; L3 500 / 340.
+- Level 3 tiles are at least 32 px; if the map is larger than the window the view scrolls with the player (levels 1-2 unchanged).
+- Tested headless: autonomy, wide patrol coverage, no tracking through walls, noise range, regression (29 checks), L3 screenshots. Not tested: real keyboard play, feel/balance, search/return-to-patrol timing (no assertion written).
+
+UPDATE v3 (limits, coins, fake chest, pause)
+- Move limits: L1 formula unchanged; L2 725; L3 888 (TreasureMaze.FIXED_MOVES). Each coin: +67 to remaining moves (COIN_MOVE_BONUS).
+- Fake chest: MimicLogic.addDisguised (levels 2-3): dead end, >=12 from start, >=6 from chest, >=4 from exit; drawn with the closed-chest sprite; reveals within 3 cells with clear line; frozen 800 ms; then normal mimic AI.
+- Mimic AI additions: 35% interception (aims ahead of the player's last heading), 30% of patrol goals near chest/exit.
+- Pause: Esc toggles; Up/Down + Enter; Main Menu stops the game timer (restarted by resetGameToLevel1); Quit asks Enter/Y or N/Esc. clock() excludes paused time.
+- Tests used: scratchpad K.java (32 checks) and G.java (its 2 L2/L3 budget checks are obsolete: they assert the old x2/x3 limits).
+
+UPDATE v4 (exact mimic counts, T key, blue bombs, pause music, texts)
+- Mimics per level (regular + 1 disguised): L1 1+1, L2 1+1 (kept from v3), L3 2+1. Damage 1/2/1 hearts (TreasureMaze.MIMIC_DAMAGE). Disguised one is 3x slower (MimicLogic.slow).
+- Catch: no teleport/reset; the catching mimic is stunned 2.5 s so one catch hurts once.
+- T key (and walking into a chest cell): real chest -> openRealChest(); fake chest -> revealAt() (0.5 s freeze). Neighbour order up, down, left, right.
+- Pickups per level: 20 black + 5 blue ('U'), 25 total (GameMap.SPEC; this changed the old 3/24/48 black bombs per level).
+- Blue bombs: SPACE places; a mimic within 1 cell triggers it; stun 3.5 s radius 4; other unstunned mimics hear the noise.
+- Pause also pauses music (SoundManager.pauseMusic/resumeMusic).
+- Obsolete scratchpad tests: G (x2/x3 budgets, teleport on catch), K (proximity reveal, L1 no decoy).
+
+UPDATE v5: fake chest never has a bomb (black or blue) in the 3x3 around it (MimicLogic.bombNear); T also works on diagonals (TreasureMaze.interactWithChest).
+
+UPDATE v6: chests open ONLY with T (stepping onto the real chest or into a fake chest does nothing; fake chest blocks movement). T also works while standing on the real chest.
+
+UPDATE v7: R restart removed. Added plain-language HOW IT WORKS comments to the main classes and key methods.
+
+UPDATE v8: the chest key is now E (was T). Everything else unchanged.
+
+UPDATE v9: a bomb stepped on at 0 hearts (countdown running) ends the game.
+
+UPDATE v10: the mimic that catches the player freezes 1 s (was 2.5 s).

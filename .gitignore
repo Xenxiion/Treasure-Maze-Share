@@ -1,0 +1,49 @@
+# Compiled Java class files
+
+*.class
+
+# Log files
+
+*.log
+
+# BlueJ files
+
+*.ctxt
+
+# Java virtual machine crash logs
+
+hs_err_pid*
+replay_pid*
+
+# Java build output
+
+out/
+build/
+target/
+
+# IDE settings
+
+.vscode/
+.idea/
+
+# Temporary files
+
+*.tmp
+*.temp
+
+# Java archives and packages
+
+*.jar
+*.war
+*.nar
+*.ear
+
+# Compressed archives
+
+*.zip
+*.tar.gz
+*.rar
+
+# Mobile Tools for Java (J2ME)
+
+.mtj.tmp/
